@@ -10,6 +10,8 @@ public class Player : NetworkBehaviour
     public float moveSpeed = 5;
     public float jumpForce = 6;
     public bool isGrounded = false;
+    
+    public bool topTriggerOverlapping = false;
 
 
     Rigidbody2D rb;
@@ -20,7 +22,6 @@ public class Player : NetworkBehaviour
 
     private void Awake() {
         rb = GetComponent<Rigidbody2D>();
-
         playerCollider2d = GetComponent<CapsuleCollider2D>();
     }
 
@@ -38,6 +39,18 @@ public class Player : NetworkBehaviour
                 //rb.velocity = new Vector2(0,rb.velocity.y);
             }
             //transform.position = transform.position + movement;
+
+            
+            if(Input.GetAxis("Vertical") < 0.0f && isGrounded) {
+                //RaycastHit2D down = Physics2D.Linecast(transform.position, new Vector2(transform.position.x, transform.position.y - 0.001f), 1 << LayerMask.NameToLayer("Platform"));
+
+                if (topTriggerOverlapping) {
+                    GetComponent<CapsuleCollider2D>().isTrigger = true;
+                    //StartCoroutine("Fall");
+                }
+                
+            }
+            
         }
     }
 
@@ -47,19 +60,20 @@ public class Player : NetworkBehaviour
     }
 
     private void Update() {
-        if (Input.GetButtonDown("Jump") && isGrounded){
-            Jump();
+        if (isLocalPlayer) {
+            if (Input.GetButtonDown("Jump") && isGrounded){
+                Jump();
+            }
         }
+        
 
-        //RaycastHit2D down = Physics2D.Linecast(transform.position, new Vector2(transform.position.x, transform.position.y - 0.1f), 1 << LayerMask.NameToLayer("Platform"));
+        
 
         //Debug.Log(down.ToString());
 
 
 
-        if(Input.GetAxis("Vertical") < 0.0f) {
-            StartCoroutine("Fall");
-        }
+        
 
     }
 
@@ -76,11 +90,27 @@ public class Player : NetworkBehaviour
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (other.name == "TopTrigger" && rb.velocity.y <= 0 ){
+            topTriggerOverlapping = true;
+            //Debug.Log("Enter top trigger with velocity " + rb.velocity.y);
+        }
+        
+    }
+
+    private void OnTriggerExit2D(Collider2D other) {
+        if (other.name == "TopTrigger" && rb.velocity.y < 0){
+            topTriggerOverlapping = false;
+            //Debug.Log("Exit top trigger with velocity " + rb.velocity.y);
+        }
+    }
+
 
     private IEnumerator Fall() {
         GetComponent<CapsuleCollider2D>().isTrigger = true;
-        yield return new WaitForSeconds(0.5f);
-        GetComponent<CapsuleCollider2D>().isTrigger = false;
+        yield return new WaitForSeconds(0);
+        //yield return new WaitForSeconds(0.3f);
+        //GetComponent<CapsuleCollider2D>().isTrigger = false;
     }
     
 

@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class Door : MonoBehaviour
+public class Door : NetworkBehaviour
 {
     public int minWaitTime;
     public int maxWaitTime;
@@ -21,6 +22,7 @@ public class Door : MonoBehaviour
     {
         
     }
+
 
     void OpenDoor(){
         
